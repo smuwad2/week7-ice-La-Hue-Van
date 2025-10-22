@@ -1,6 +1,7 @@
 <script setup>
     import monster from '/assets/monster.png' 
     import prince from '/assets/prince.png'
+    
 </script>
 
 <script>

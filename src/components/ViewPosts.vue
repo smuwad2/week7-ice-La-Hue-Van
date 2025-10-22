@@ -35,13 +35,50 @@ export default {
             })
     },
     methods: {
-        editPost(id) {
+    async getPosts() {
+        try {
+            const response = await axios.get(`${this.baseUrl}/posts`);
+            this.posts = response.data;
+        } catch (error) {
+            console.error("Error fetching posts:", error);
+        }
+    },
+    
+    editPost(id) {
+        const postToEdit = this.posts.find(p => p.id === id);
+        
+        if (postToEdit) {
+            this.editPostId = postToEdit.id;
+            this.entry = postToEdit.entry;
+            this.mood = postToEdit.mood;
+            this.showEditPost = true;
+        }
+    },
+    
+    async updatePost(event) { 
+        if (event) {
+            event.preventDefault(); 
+        }
+        
+        try {
+            await axios.post(`${this.baseUrl}/updatePost?id=${this.editPostId}`, {
+            entry: this.entry,
+            mood: this.mood,
+            });
+            await this.getPosts(); 
             
-        },
-        updatePost(event) {
+            this.showEditPost = false;
             
+            this.editPostId = "";
+            this.entry = "";
+            this.mood = "";
+
+        } catch (error) {
+            console.error("Error updating post:", error);
+            alert("Failed to update post.");
         }
     }
+}
 }
 </script>
 
@@ -61,7 +98,7 @@ export default {
                     <td>{{ post.id }}</td>
                     <td>{{ post.entry }}</td>
                     <td>{{ post.mood }}</td>
-                    <td><button>Edit</button></td>
+                    <td><button @click="editPost(post.id)">Edit</button></td>
                 </tr>
             </tbody>
 
@@ -70,7 +107,7 @@ export default {
         <div id="editPost" v-if="showEditPost">
             <h3>Edit Post</h3>
             <div id="postContent" class="mx-3">
-                <form>
+                <form @submit.prevent="updatePost">
                     <div class="mb-3">
                         <label for="entry" class="form-label">Entry</label>
                         <textarea id="entry" class="form-control" v-model="entry" required></textarea>
